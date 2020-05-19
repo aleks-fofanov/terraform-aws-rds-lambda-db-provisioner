@@ -34,8 +34,8 @@ don't need a new user) will be granted all permissions to created database.
 **Features**:
   - Master user password as well as new user password can be passed to the module either via variables or via SSM
     Parameters (**preferred**).
-  - Lambda function execution logs are shipped to Cloudwatch
-  -
+  - Lambda function execution logs are shipped to Cloudwatch.
+  - No database or user will be created if they are already exist.
 
 **Caveats**:
   - This lambda function needs internet access in order to comminitcate with AWS API. You need to associate this
