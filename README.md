@@ -11,12 +11,6 @@ Terraform module to provision a database and optionally a user in RDS instance i
 
 Terraform 0.12. Pin module version to `~> 1.0`. Submit pull-requests to `master` branch.
 
-### TODOs
-
-- Support SSL connections to RDS
-- Switch to Circle CI for CI/CD pipelines
-- Pack source code to a ZIP file (?)
-
 
 ---
 
@@ -54,6 +48,11 @@ don't need a new user) will be granted all permissions to created database.
   - ENIs attached to a lambda function may cause `DependencyViolation` error when you try to destroy associated
     security groups and/or subnets.
     More context: (Corresponding issue on github)[https://github.com/terraform-providers/terraform-provider-aws/issues/10329]
+
+**TODOs**:
+  - Support SSL connections to RDS
+  - Switch to Circle CI for CI/CD pipelines
+  - Pack source code to a ZIP file (?)
 
 This module is backed by best of breed terraform modules maintained by [Cloudposse](https://github.com/cloudposse).
 
