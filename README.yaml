@@ -1,0 +1,168 @@
+---
+#
+# This is the canonical configuration for the `README.md`
+# Run `make readme` to rebuild the `README.md`
+#
+
+# Name of this project
+name: terraform-aws-rds-lambda-db-provisioner
+
+# Tags of this project
+tags:
+  - aws
+  - terraform
+  - terraform-modules
+  - rds
+  - database
+  - lambda
+
+# Logo for this project
+#logo: docs/logo.png
+
+# License of this project
+license: "APACHE2"
+
+# Canonical GitHub repo
+github_repo: aleks-fofanov/terraform-aws-rds-lambda-db-provisioner
+
+# Badges to display
+badges:
+  - name: "Build Status"
+    image: "https://travis-ci.org/aleks-fofanov/terraform-aws-rds-lambda-db-provisioner.svg?branch=master"
+    url: "https://travis-ci.org/aleks-fofanov/terraform-aws-rds-lambda-db-provisioner"
+  - name: "Latest Release"
+    image: "https://img.shields.io/github/release/aleks-fofanov/terraform-aws-rds-lambda-db-provisioner.svg"
+    url: "https://github.com/aleks-fofanov/terraform-aws-rds-lambda-db-provisioner/releases/latest"
+
+# Short description of this project
+description: |-
+  Terraform module to provision a database and optionally a user in RDS instance in a VPC.
+
+  ### Terraform versions
+
+  Terraform 0.12. Pin module version to `~> 1.0`. Submit pull-requests to `master` branch.
+
+  ### TODOs
+
+  - Support SSL connections to RDS
+  - Switch to Circle CI for CI/CD pipelines
+  - Pack source code to a ZIP file (?)
+
+introduction: |-
+  This module provisions a AWS lambda function which creates a new database and optionally a new user in RDS instances
+  in a VPC. Supported engines are `postgres` and `mysql`. A newly created user, or a master user (in case when you
+  don't need a new user) will be granted all permissions to created database.
+
+  **Features**:
+    - Master user password as well as new user password can be passed to the module either via variables or via SSM
+      Parameters (**preferred**).
+    - Lambda function execution logs are shipped to Cloudwatch
+    -
+
+  **Caveats**:
+    - This lambda function needs internet access in order to comminitcate with AWS API. You need to associate this
+      function with one or more private subnets in your VPC and make sure that their routing tables have a default
+      route pointing to NAT Gateway or NAT Instance in a public subnet. Associating a lambda function with a public
+      subnet doesn't give it internet connectivity or public IP address. More context:
+      [Give Internet Access to a Lambda Function in a VPC](https://aws.amazon.com/premiumsupport/knowledge-center/internet-access-lambda-function/)
+    - This lambda function **DOES NOT DROP provisioned database or user** on destroy in order to prevent accidental data
+      loss. Please make sure to delete provisioned database and user manually.
+    - ENIs attached to a lambda function may cause `DependencyViolation` error when you try to destroy associated
+      security groups and/or subnets.
+      More context: (Corresponding issue on github)[https://github.com/terraform-providers/terraform-provider-aws/issues/10329]
+
+  This module is backed by best of breed terraform modules maintained by [Cloudposse](https://github.com/cloudposse).
+
+# How to use this project
+usage: |-
+  This example creates a database `new_database` and a user `new_user` with the passwords
+  passed via variables.
+
+  ```hcl
+  module "db_provisioner" {
+    source    = "git::https://github.com/aleks-fofanov/terraform-aws-rds-lambda-db-provisioner.git?ref=master"
+    name      = "stack"
+    namespace = "cp"
+    stage     = "prod"
+
+    db_instance_id                = "prod-stack-db"
+    db_instance_security_group_id = "sg-XXXXXXXX"
+    db_master_password            = "XXXXXXXX"
+
+    db_name                            = "new_database"
+    db_user                            = "new_user"
+    db_user_password                   = "XXXXXXXX"
+
+    vpc_config = {
+      vpc_id             = "vpc-XXXXXXXX"
+      subnet_ids         = ["subnet-XXXXXXXX", "subnet-XXXXXXXX"]
+      security_group_ids = []
+    }
+  }
+  ```
+
+examples: |-
+  ### Example with passwords passed via SSM Parameters
+
+  This example creates a database `new_database` and a user `new_user` with the passwords
+  passed via SSM Parameters.
+
+  ```hcl
+  module "db_provisioner" {
+    source    = "git::https://github.com/aleks-fofanov/terraform-aws-rds-lambda-db-provisioner.git?ref=master"
+    name      = "stack"
+    namespace = "cp"
+    stage     = "prod"
+
+    db_instance_id                       = "prod-stack-db"
+    db_instance_security_group_id        = "sg-XXXXXXXX"
+    db_master_password_ssm_param         = "/cp/prod/stack/database/master_password"
+    db_master_password_ssm_param_kms_key = "alias/aws/ssm"
+
+    db_name                            = "new_database"
+    db_user                            = "new_user"
+    db_user_password_ssm_param         = "/cp/prod/stack/database/new_user_password"
+    db_user_password_ssm_param_kms_key = "alias/aws/ssm"
+
+    vpc_config = {
+      vpc_id             = "vpc-XXXXXXXX"
+      subnet_ids         = ["subnet-XXXXXXXX", "subnet-XXXXXXXX"]
+      security_group_ids = []
+    }
+  }
+  ```
+
+  ### Example without a new user
+
+  This example creates a database `new_database` without a new user with the master user password
+  passed via SSM Parameter.
+
+  ```hcl
+  module "db_provisioner" {
+    source    = "git::https://github.com/aleks-fofanov/terraform-aws-rds-lambda-db-provisioner.git?ref=master"
+    name      = "stack"
+    namespace = "cp"
+    stage     = "prod"
+
+    db_instance_id                       = "prod-stack-db"
+    db_instance_security_group_id        = "sg-XXXXXXXX"
+    db_master_password_ssm_param         = "/cp/prod/stack/database/master_password"
+    db_master_password_ssm_param_kms_key = "alias/aws/ssm"
+
+    db_name                            = "new_database"
+
+    vpc_config = {
+      vpc_id             = "vpc-XXXXXXXX"
+      subnet_ids         = ["subnet-XXXXXXXX", "subnet-XXXXXXXX"]
+      security_group_ids = []
+    }
+  }
+  ```
+
+include:
+  - "docs/terraform.md"
+
+# Contributors to this project
+contributors:
+  - name: "Aleksandr Fofanov"
+    github: "aleks-fofanov"
