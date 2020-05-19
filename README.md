@@ -47,7 +47,7 @@ don't need a new user) will be granted all permissions to created database.
     loss. Please make sure to delete provisioned database and user manually.
   - ENIs attached to a lambda function may cause `DependencyViolation` error when you try to destroy associated
     security groups and/or subnets.
-    More context: (Corresponding issue on github)[https://github.com/terraform-providers/terraform-provider-aws/issues/10329]
+    More context: [Corresponding issue on github](https://github.com/terraform-providers/terraform-provider-aws/issues/10329)
 
 **TODOs**:
   - Support SSL connections to RDS
