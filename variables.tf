@@ -58,13 +58,13 @@ variable "vpc_config" {
     subnet_ids         = list(string)
     security_group_ids = list(string)
   })
-  description = "VPC configuratiuon for Lambda function"
+  description = "VPC configuration for Lambda function"
 }
 
 variable "kms_key" {
   type        = string
   default     = null
-  description = "KMS key identifier. Acceptes the same format as KMS key data source (https://www.terraform.io/docs/providers/aws/d/kms_key.html). If this configuration is not provided when environment variables are in use, AWS Lambda uses a default service key."
+  description = "KMS key identifier. Accepts the same format as KMS key data source (https://www.terraform.io/docs/providers/aws/d/kms_key.html). If this configuration is not provided when environment variables are in use, AWS Lambda uses a default service key."
 }
 
 variable "invoke" {
@@ -93,7 +93,7 @@ variable "db_instance_id" {
 variable "db_master_password_ssm_param" {
   type        = string
   default     = null
-  description = "Name of SSM Parameter that stores password for master user. This param takes precendence other `db_master_password`"
+  description = "Name of SSM Parameter that stores password for master user. This param takes precedence other `db_master_password`"
 }
 
 variable "db_master_password_ssm_param_kms_key" {
@@ -121,14 +121,14 @@ variable "db_name" {
 
 variable "db_user" {
   type        = string
-  description = "Name of user that should be created and own (has all persmiison to) the provisioned database. If left empty, no user will be created"
+  description = "Name of user that should be created and own (has all permission to) the provisioned database. If left empty, no user will be created"
   default     = null
 }
 
 variable "db_user_password_ssm_param" {
   type        = string
   default     = null
-  description = "Name of SSM Parameter that stores password for provisioned user. This param takes precendence other `db_user_password`"
+  description = "Name of SSM Parameter that stores password for provisioned user. This param takes precedence other `db_user_password`"
 }
 
 variable "db_user_password_ssm_param_kms_key" {
@@ -139,7 +139,7 @@ variable "db_user_password_ssm_param_kms_key" {
 
 variable "db_user_password" {
   type        = string
-  description = "Password for the user that should be created and own (has all persmiison to) the provisioned database. Ignored if `db_user` is set to null"
+  description = "Password for the user that should be created and own (has all permission to) the provisioned database. Ignored if `db_user` is set to null"
   default     = null
 }
 
