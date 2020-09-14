@@ -24,16 +24,14 @@ locals {
 # Datasources
 #############################################################
 
+data "aws_partition" "current" {}
+data "aws_region" "current" {}
+data "aws_caller_identity" "current" {}
+
 data "aws_db_instance" "default" {
   count = var.enabled ? 1 : 0
 
   db_instance_identifier = var.db_instance_id
-}
-
-data "aws_ssm_parameter" "master_password" {
-  count = var.enabled && local.master_password_in_ssm_param ? 1 : 0
-
-  name = var.db_master_password_ssm_param
 }
 
 data "aws_secretsmanager_secret" "master_password" {
@@ -46,12 +44,6 @@ data "aws_kms_key" "master_password" {
   count = var.enabled && local.master_password_in_ssm_param && local.master_password_ssm_param_ecnrypted ? 1 : 0
 
   key_id = var.db_master_password_ssm_param_kms_key
-}
-
-data "aws_ssm_parameter" "user_password" {
-  count = var.enabled && local.user_password_in_ssm_param ? 1 : 0
-
-  name = var.db_user_password_ssm_param
 }
 
 data "aws_secretsmanager_secret" "user_password" {
@@ -267,7 +259,7 @@ data "aws_iam_policy_document" "master_password_ssm_permissions" {
     actions = [
       "ssm:GetParameter",
     ]
-    resources = [join("", data.aws_ssm_parameter.master_password.*.arn)]
+    resources = ["arn:${data.aws_partition.current.partition}:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter${var.db_master_password_ssm_param}"]
   }
 }
 
@@ -303,7 +295,7 @@ data "aws_iam_policy_document" "user_password_ssm_permissions" {
     actions = [
       "ssm:GetParameter",
     ]
-    resources = [join("", data.aws_ssm_parameter.user_password.*.arn)]
+    resources = ["arn:${data.aws_partition.current.partition}:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter${var.db_user_password_ssm_param}"]
   }
 }
 
