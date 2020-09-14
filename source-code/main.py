@@ -20,6 +20,7 @@ import boto3
 import os
 from dataclasses import dataclass
 from typing import List
+import json
 
 import psycopg2
 import pymysql
@@ -55,7 +56,11 @@ class DBProvisioner(object):
             Name=name,
             WithDecryption=True
         )
-        return response.get('Parameter').get('Value')
+        returnval = response.get('Parameter').get('Value')
+        if (name.startswith('/aws/reference/secretsmanager')):
+            val = json.loads(returnval)
+            returnval = val['password']
+        return returnval
 
     @staticmethod
     def _get_pg_usernames(cursor) -> List[str]:
