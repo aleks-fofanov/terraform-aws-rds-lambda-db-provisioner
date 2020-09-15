@@ -58,8 +58,11 @@ class DBProvisioner(object):
         )
         returnval = response.get('Parameter').get('Value')
         if (name.startswith('/aws/reference/secretsmanager')):
-            val = json.loads(returnval)
-            returnval = val['password']
+            try:
+                val = json.loads(returnval)
+                returnval = val['password']
+            except ValueError as e:
+                pass
         return returnval
 
     @staticmethod
