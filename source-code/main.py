@@ -8,7 +8,7 @@ Endpoint, engine and master username will be obtained through AWS RDS API, you
 just need to pass db instance identifier.
 
 Master user will be granted all permissions to the created database.
-If user or database already exist - they won't be created.
+If user or database already exists - they won't be created.
 
 Author: aleksandr.fofanov@quantumsoft.ru
 
@@ -20,6 +20,7 @@ import boto3
 import os
 from dataclasses import dataclass
 from typing import List
+import json
 
 import psycopg2
 import pymysql
@@ -55,7 +56,14 @@ class DBProvisioner(object):
             Name=name,
             WithDecryption=True
         )
-        return response.get('Parameter').get('Value')
+        returnval = response.get('Parameter').get('Value')
+        if (name.startswith('/aws/reference/secretsmanager')):
+            try:
+                val = json.loads(returnval)
+                returnval = val['password']
+            except ValueError as e:
+                pass
+        return returnval
 
     @staticmethod
     def _get_pg_usernames(cursor) -> List[str]:
@@ -95,7 +103,7 @@ class DBProvisioner(object):
         if info.provision_user:
             usernames = self._get_pg_usernames(cursor)
             if info.provision_user in usernames:
-                self.logger.warning("User '{}' won't be created because it's already exist".format(info.provision_user))
+                self.logger.warning("User '{}' won't be created because it already exists".format(info.provision_user))
             else:
                 self.logger.info("Creating user '{}'".format(info.provision_user))
 
@@ -110,7 +118,7 @@ class DBProvisioner(object):
 
         if info.provision_db_name in databases_names:
             self.logger.warning(
-                "Database '{}' won't be created because it's already exist".format(info.provision_db_name))
+                "Database '{}' won't be created because it already exists".format(info.provision_db_name))
         else:
             self.logger.info("Creating database '{}'".format(info.provision_db_name))
 
@@ -172,7 +180,7 @@ class DBProvisioner(object):
         if info.provision_user:
             usernames = self._get_mysql_usernames(cursor)
             if info.provision_user in usernames:
-                self.logger.warning("User '{}' won't be created because it's already exist".format(info.provision_user))
+                self.logger.warning("User '{}' won't be created because it already exists".format(info.provision_user))
             else:
                 self.logger.info("Creating user '{}'".format(info.provision_user))
 
@@ -192,7 +200,7 @@ class DBProvisioner(object):
         databases_names = self._get_mysql_databases_names(cursor)
 
         if info.provision_db_name in databases_names:
-            self.logger.warning("Database '{}' won't be created because it's already exist".format(
+            self.logger.warning("Database '{}' won't be created because it already exists".format(
                 info.provision_db_name
             ))
         else:

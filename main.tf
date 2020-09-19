@@ -8,10 +8,16 @@ locals {
   // Master user password
   master_password_in_ssm_param        = var.db_master_password_ssm_param != null ? true : false
   master_password_ssm_param_ecnrypted = var.db_master_password_ssm_param_kms_key != null ? true : false
+  # Replace null with empty string so that the following regexall will work.
+  db_master_password_ssm_param        = var.db_master_password_ssm_param == null ? "" : var.db_master_password_ssm_param
+  master_password_in_secretsmanager   = length(regexall("/aws/reference/secretsmanager/", local.db_master_password_ssm_param)) > 0
 
   // Provisioned user password
   user_password_in_ssm_param        = var.db_user_password_ssm_param != null ? true : false
   user_password_ssm_param_ecnrypted = var.db_user_password_ssm_param_kms_key != null ? true : false
+  # Replace null with empty string so that the following regexall will work.
+  db_user_password_ssm_param        = var.db_user_password_ssm_param == null ? "" : var.db_user_password_ssm_param
+  user_password_in_secretsmanager   = length(regexall("/aws/reference/secretsmanager/", local.db_user_password_ssm_param)) > 0
 }
 
 #############################################################
@@ -30,6 +36,12 @@ data "aws_ssm_parameter" "master_password" {
   name = var.db_master_password_ssm_param
 }
 
+data "aws_secretsmanager_secret" "master_password" {
+  count = var.enabled && local.master_password_in_secretsmanager ? 1 : 0
+
+  name = trimprefix(var.db_master_password_ssm_param, "/aws/reference/secretsmanager/")
+}
+
 data "aws_kms_key" "master_password" {
   count = var.enabled && local.master_password_in_ssm_param && local.master_password_ssm_param_ecnrypted ? 1 : 0
 
@@ -40,6 +52,12 @@ data "aws_ssm_parameter" "user_password" {
   count = var.enabled && local.user_password_in_ssm_param ? 1 : 0
 
   name = var.db_user_password_ssm_param
+}
+
+data "aws_secretsmanager_secret" "user_password" {
+  count = var.enabled && local.user_password_in_secretsmanager ? 1 : 0
+
+  name = trimprefix(var.db_user_password_ssm_param, "/aws/reference/secretsmanager/")
 }
 
 data "aws_kms_key" "user_password" {
@@ -253,6 +271,18 @@ data "aws_iam_policy_document" "master_password_ssm_permissions" {
   }
 }
 
+data "aws_iam_policy_document" "master_password_secretsmanager_permissions" {
+  count = var.enabled && local.master_password_in_secretsmanager ? 1 : 0
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "secretsmanager:GetSecretValue",
+    ]
+    resources = [join("", data.aws_secretsmanager_secret.master_password.*.arn)]
+  }
+}
+
 data "aws_iam_policy_document" "master_password_kms_permissions" {
   count = var.enabled && local.master_password_in_ssm_param && local.master_password_ssm_param_ecnrypted ? 1 : 0
 
@@ -277,6 +307,18 @@ data "aws_iam_policy_document" "user_password_ssm_permissions" {
   }
 }
 
+data "aws_iam_policy_document" "user_password_secretsmanager_permissions" {
+  count = var.enabled && local.user_password_in_secretsmanager ? 1 : 0
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "secretsmanager:GetSecretValue",
+    ]
+    resources = [join("", data.aws_secretsmanager_secret.user_password.*.arn)]
+  }
+}
+
 data "aws_iam_policy_document" "user_password_kms_permissions" {
   count = var.enabled && local.user_password_in_ssm_param && local.user_password_ssm_param_ecnrypted ? 1 : 0
 
@@ -297,8 +339,10 @@ module "aggregated_policy" {
     join("", data.aws_iam_policy_document.lambda_kms_permissions.*.json),
     join("", data.aws_iam_policy_document.master_password_ssm_permissions.*.json),
     join("", data.aws_iam_policy_document.master_password_kms_permissions.*.json),
+    join("", data.aws_iam_policy_document.master_password_secretsmanager_permissions.*.json),
     join("", data.aws_iam_policy_document.user_password_ssm_permissions.*.json),
     join("", data.aws_iam_policy_document.user_password_kms_permissions.*.json),
+    join("", data.aws_iam_policy_document.user_password_secretsmanager_permissions.*.json),
   ])
 }
 
