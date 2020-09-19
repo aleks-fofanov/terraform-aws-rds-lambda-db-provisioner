@@ -9,15 +9,15 @@ locals {
   master_password_in_ssm_param        = var.db_master_password_ssm_param != null ? true : false
   master_password_ssm_param_ecnrypted = var.db_master_password_ssm_param_kms_key != null ? true : false
   # Replace null with empty string so that the following regexall will work.
-  db_master_password_ssm_param        = var.db_master_password_ssm_param == null ? "" : var.db_master_password_ssm_param
-  master_password_in_secretsmanager   = length(regexall("/aws/reference/secretsmanager/", local.db_master_password_ssm_param)) > 0
+  db_master_password_ssm_param      = var.db_master_password_ssm_param == null ? "" : var.db_master_password_ssm_param
+  master_password_in_secretsmanager = length(regexall("/aws/reference/secretsmanager/", local.db_master_password_ssm_param)) > 0
 
   // Provisioned user password
   user_password_in_ssm_param        = var.db_user_password_ssm_param != null ? true : false
   user_password_ssm_param_ecnrypted = var.db_user_password_ssm_param_kms_key != null ? true : false
   # Replace null with empty string so that the following regexall will work.
-  db_user_password_ssm_param        = var.db_user_password_ssm_param == null ? "" : var.db_user_password_ssm_param
-  user_password_in_secretsmanager   = length(regexall("/aws/reference/secretsmanager/", local.db_user_password_ssm_param)) > 0
+  db_user_password_ssm_param      = var.db_user_password_ssm_param == null ? "" : var.db_user_password_ssm_param
+  user_password_in_secretsmanager = length(regexall("/aws/reference/secretsmanager/", local.db_user_password_ssm_param)) > 0
 }
 
 #############################################################

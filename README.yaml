@@ -48,10 +48,17 @@ introduction: |-
   don't need a new user) will be granted all permissions to created database.
 
   **Features**:
-    - Master user password as well as new user password can be passed to the module either via variables or via SSM
-      Parameters (**preferred**).
+    - Master user password as well as new user password can be passed to the module either via
+      - Module variables
+      - Parameters in SSM Parameter Store (**Recommended!**)
+      - Secrets in Secrets Manager (**Recommended!**)
     - Lambda function execution logs are shipped to Cloudwatch.
     - No database or user will be created if they are already exist.
+
+  **Notes on using secrets from AWS Secrets Manager**:
+    - When [referencing secrets stored in Secrets Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/integration-ps-secretsmanager.html),
+      the `/aws/reference/secretsmanager` prefix must be used
+    - A secret must contain password in the `password` field or be a plain-text secret
 
   **Caveats**:
     - This lambda function needs internet access in order to comminitcate with AWS API. You need to associate this
@@ -65,10 +72,9 @@ introduction: |-
       security groups and/or subnets.
       More context: [Corresponding issue on github](https://github.com/terraform-providers/terraform-provider-aws/issues/10329)
 
-  **TODOs**:
-    - Support SSL connections to RDS
-    - Switch to Circle CI for CI/CD pipelines
-    - Pack source code to a ZIP file (?)
+  **Backlog**:
+    [ ] Support SSL connections to RDS
+    [ ] Switch to Circle CI for CI/CD pipelines
 
   This module is backed by best of breed terraform modules maintained by [Cloudposse](https://github.com/cloudposse).
 
@@ -165,3 +171,5 @@ include:
 contributors:
   - name: "Aleksandr Fofanov"
     github: "aleks-fofanov"
+  - name: "Mike Arnold"
+    github: "razorsedge"

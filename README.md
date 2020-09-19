@@ -32,10 +32,17 @@ in a VPC. Supported engines are `postgres` and `mysql`. A newly created user, or
 don't need a new user) will be granted all permissions to created database.
 
 **Features**:
-  - Master user password as well as new user password can be passed to the module either via variables or via SSM
-    Parameters (**preferred**).
+  - Master user password as well as new user password can be passed to the module either via
+    - Module variables
+    - Parameters in SSM Parameter Store (**Recommended!**)
+    - Secrets in Secrets Manager (**Recommended!**)
   - Lambda function execution logs are shipped to Cloudwatch.
   - No database or user will be created if they are already exist.
+
+**Notes on using secrets from AWS Secrets Manager**:
+  - When [referencing secrets stored in Secrets Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/integration-ps-secretsmanager.html),
+    the `/aws/reference/secretsmanager` prefix must be used
+  - A secret must contain password in the `password` field or be a plain-text secret
 
 **Caveats**:
   - This lambda function needs internet access in order to comminitcate with AWS API. You need to associate this
@@ -49,10 +56,9 @@ don't need a new user) will be granted all permissions to created database.
     security groups and/or subnets.
     More context: [Corresponding issue on github](https://github.com/terraform-providers/terraform-provider-aws/issues/10329)
 
-**TODOs**:
-  - Support SSL connections to RDS
-  - Switch to Circle CI for CI/CD pipelines
-  - Pack source code to a ZIP file (?)
+**Backlog**:
+  [ ] Support SSL connections to RDS
+  [ ] Switch to Circle CI for CI/CD pipelines
 
 This module is backed by best of breed terraform modules maintained by [Cloudposse](https://github.com/cloudposse).
 
@@ -178,17 +184,17 @@ module "db_provisioner" {
 | db\_instance\_id | DB Instance Identifier | `string` | n/a | yes |
 | db\_instance\_security\_group\_id | DB instance security group to add rules to. Rules will allow communication between Lambda and DB instance | `string` | `null` | no |
 | db\_master\_password | DB Instance master password. The usage of this parameter is discouraged. Consider putting db password in SSM Parameter Store and passing its ARN to the module via `db_master_password_ssm_parameter_arn` parameter | `string` | `null` | no |
-| db\_master\_password\_ssm\_param | Name of SSM Parameter that stores password for master user. This param takes precendence other `db_master_password` | `string` | `null` | no |
+| db\_master\_password\_ssm\_param | Name of SSM Parameter that stores password for master user. This param takes precedence other `db_master_password` | `string` | `null` | no |
 | db\_master\_password\_ssm\_param\_kms\_key | Identifier of KMS key used for encryption of SSM Parameter that stores password for master user | `string` | `null` | no |
 | db\_name | Database name that should be created | `string` | n/a | yes |
-| db\_user | Name of user that should be created and own (has all persmiison to) the provisioned database. If left empty, no user will be created | `string` | `null` | no |
-| db\_user\_password | Password for the user that should be created and own (has all persmiison to) the provisioned database. Ignored if `db_user` is set to null | `string` | `null` | no |
-| db\_user\_password\_ssm\_param | Name of SSM Parameter that stores password for provisioned user. This param takes precendence other `db_user_password` | `string` | `null` | no |
+| db\_user | Name of user that should be created and own (has all permission to) the provisioned database. If left empty, no user will be created | `string` | `null` | no |
+| db\_user\_password | Password for the user that should be created and own (has all permission to) the provisioned database. Ignored if `db_user` is set to null | `string` | `null` | no |
+| db\_user\_password\_ssm\_param | Name of SSM Parameter that stores password for provisioned user. This param takes precedence other `db_user_password` | `string` | `null` | no |
 | db\_user\_password\_ssm\_param\_kms\_key | Identifier of KMS key used for encryption of SSM Parameter that stores password for provisioned user | `string` | `null` | no |
 | delimiter | Delimiter to be used between `namespace`, `name`, `stage` and `attributes` | `string` | `"-"` | no |
 | enabled | Defines whether this module should create resources | `bool` | `true` | no |
 | invoke | Defines whether lambda function should be invoked immediately after provisioning | `bool` | `true` | no |
-| kms\_key | KMS key identifier. Acceptes the same format as KMS key data source (https://www.terraform.io/docs/providers/aws/d/kms_key.html). If this configuration is not provided when environment variables are in use, AWS Lambda uses a default service key. | `string` | `null` | no |
+| kms\_key | KMS key identifier. Accepts the same format as KMS key data source (https://www.terraform.io/docs/providers/aws/d/kms_key.html). If this configuration is not provided when environment variables are in use, AWS Lambda uses a default service key. | `string` | `null` | no |
 | logs\_kms\_key\_id | KMS Key Id for Lambda function logs ecnryption | `string` | `null` | no |
 | logs\_retention\_days | Lambda function logs retentions in days | `number` | `null` | no |
 | memory | Amount of memory in MB your Lambda Function can use at runtime | `number` | `256` | no |
@@ -197,7 +203,7 @@ module "db_provisioner" {
 | stage | Stage (e.g. `prod`, `dev`, `staging`) | `string` | `""` | no |
 | tags | Additional tags (e.g. `map(`BusinessUnit`,`XYZ`)` | `map(string)` | `{}` | no |
 | timeout | The amount of time your Lambda Function has to run in seconds | `number` | `30` | no |
-| vpc\_config | VPC configuratiuon for Lambda function | <pre>object({<br>    vpc_id             = string<br>    subnet_ids         = list(string)<br>    security_group_ids = list(string)<br>  })</pre> | n/a | yes |
+| vpc\_config | VPC configuration for Lambda function | <pre>object({<br>    vpc_id             = string<br>    subnet_ids         = list(string)<br>    security_group_ids = list(string)<br>  })</pre> | n/a | yes |
 
 ## Outputs
 
@@ -283,11 +289,13 @@ All other trademarks referenced herein are the property of their respective owne
 
 ### Contributors
 
-|  [![Aleksandr Fofanov][aleks-fofanov_avatar]][aleks-fofanov_homepage]<br/>[Aleksandr Fofanov][aleks-fofanov_homepage] |
-|---|
+|  [![Aleksandr Fofanov][aleks-fofanov_avatar]][aleks-fofanov_homepage]<br/>[Aleksandr Fofanov][aleks-fofanov_homepage] | [![Mike Arnold][razorsedge_avatar]][razorsedge_homepage]<br/>[Mike Arnold][razorsedge_homepage] |
+|---|---|
 
   [aleks-fofanov_homepage]: https://github.com/aleks-fofanov
   [aleks-fofanov_avatar]: https://github.com/aleks-fofanov.png?size=150
+  [razorsedge_homepage]: https://github.com/razorsedge
+  [razorsedge_avatar]: https://github.com/razorsedge.png?size=150
 
 
 
