@@ -5,14 +5,14 @@
 locals {
   lambda_zip_archive_path = "${path.module}/generated/lambda.zip"
 
-  // Master user password
+  # Master user password
   master_password_in_ssm_param        = var.db_master_password_ssm_param != null ? true : false
   master_password_ssm_param_ecnrypted = var.db_master_password_ssm_param_kms_key != null ? true : false
   # Replace null with empty string so that the following regexall will work.
   db_master_password_ssm_param      = var.db_master_password_ssm_param == null ? "" : var.db_master_password_ssm_param
   master_password_in_secretsmanager = length(regexall("/aws/reference/secretsmanager/", local.db_master_password_ssm_param)) > 0
 
-  // Provisioned user password
+  # Provisioned user password
   user_password_in_ssm_param        = var.db_user_password_ssm_param != null ? true : false
   user_password_ssm_param_ecnrypted = var.db_user_password_ssm_param_kms_key != null ? true : false
   # Replace null with empty string so that the following regexall will work.
@@ -24,6 +24,8 @@ locals {
 # Datasources
 #############################################################
 
+data "aws_partition" "default" {}
+
 data "aws_db_instance" "default" {
   count = var.enabled ? 1 : 0
 
@@ -33,7 +35,8 @@ data "aws_db_instance" "default" {
 data "aws_ssm_parameter" "master_password" {
   count = var.enabled && local.master_password_in_ssm_param ? 1 : 0
 
-  name = var.db_master_password_ssm_param
+  name            = var.db_master_password_ssm_param
+  with_decryption = false
 }
 
 data "aws_secretsmanager_secret" "master_password" {
@@ -51,7 +54,8 @@ data "aws_kms_key" "master_password" {
 data "aws_ssm_parameter" "user_password" {
   count = var.enabled && local.user_password_in_ssm_param ? 1 : 0
 
-  name = var.db_user_password_ssm_param
+  name            = var.db_user_password_ssm_param
+  with_decryption = false
 }
 
 data "aws_secretsmanager_secret" "user_password" {
@@ -79,7 +83,9 @@ data "aws_kms_key" "lambda" {
 module "default_label" {
   enabled = var.enabled
 
-  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
+  source  = "cloudposse/label/null"
+  version = "0.24.1"
+
   attributes = compact(concat(var.attributes, ["db", "provisioner"]))
   delimiter  = var.delimiter
   name       = var.name
@@ -93,6 +99,8 @@ module "default_label" {
 #############################################################
 
 data "archive_file" "default" {
+  count = var.enabled ? 1 : 0
+
   type        = "zip"
   output_path = local.lambda_zip_archive_path
   source_dir  = "${path.module}/source-code/"
@@ -113,11 +121,11 @@ resource "aws_lambda_function" "default" {
   description   = "Provisions database [${var.db_name}] in RDS Instance [${var.db_instance_id}]"
 
   filename         = local.lambda_zip_archive_path
-  source_code_hash = data.archive_file.default.output_base64sha256
+  source_code_hash = join("", data.archive_file.default.*.output_base64sha256)
 
   role        = join("", aws_iam_role.lambda.*.arn)
   handler     = "main.lambda_handler"
-  runtime     = "python3.7"
+  runtime     = "python3.8"
   timeout     = var.timeout
   memory_size = var.memory
   kms_key_arn = var.kms_key
@@ -151,6 +159,7 @@ resource "aws_lambda_alias" "default" {
   function_version = "$LATEST"
 }
 
+# tflint-ignore: terraform_unused_declarations
 data "aws_lambda_invocation" "default" {
   count = var.enabled && var.invoke ? 1 : 0
 
@@ -210,11 +219,12 @@ resource "aws_security_group_rule" "egress_blocks" {
 
   security_group_id = join("", aws_security_group.default.*.id)
 
+  description = "Allow all egress traffic to specified CIRD blocks"
   type        = "egress"
   from_port   = 0
   to_port     = 65535
   protocol    = -1
-  cidr_blocks = var.allowed_egress_cidr_blocks
+  cidr_blocks = var.allowed_egress_cidr_blocks #tfsec:ignore:AWS007
 }
 
 #############################################################
@@ -332,7 +342,8 @@ data "aws_iam_policy_document" "user_password_kms_permissions" {
 }
 
 module "aggregated_policy" {
-  source = "git::https://github.com/cloudposse/terraform-aws-iam-policy-document-aggregator.git?ref=tags/0.2.0"
+  source  = "cloudposse/iam-policy-document-aggregator/aws"
+  version = "0.8.0"
 
   source_documents = compact([
     join("", data.aws_iam_policy_document.default_permissions.*.json),
@@ -376,14 +387,14 @@ resource "aws_iam_role_policy_attachment" "basic_execution" {
   count = var.enabled ? 1 : 0
 
   role       = join("", aws_iam_role.lambda.*.name)
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+  policy_arn = "arn:${data.aws_partition.default.partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
 resource "aws_iam_role_policy_attachment" "vpc_access" {
   count = var.enabled ? 1 : 0
 
   role       = join("", aws_iam_role.lambda.*.name)
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+  policy_arn = "arn:${data.aws_partition.default.partition}:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 
 #############################################################
