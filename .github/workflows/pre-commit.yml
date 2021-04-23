@@ -37,7 +37,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: lambda
-          path: source-code/.serverless/rds-lambda-db-provisioner.zip
+          path: ${{env.working-directory}}/.serverless/rds-lambda-db-provisioner.zip
 
   # Min Terraform version(s)
   getDirectories:
@@ -65,12 +65,17 @@ jobs:
     strategy:
       matrix:
         directory: ${{ fromJson(needs.getDirectories.outputs.directories) }}
+    env:
+      working-directory: ./source-code
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: lambda
+      - run: ls -la
+      - run: mkdir -p ${{env.working-directory}}/.serverless/
+      - run: cp ./rds-lambda-db-provisioner.zip ${{env.working-directory}}/.serverless/
       - name: Install Python
         uses: actions/setup-python@v2
       - name: Terraform min/max versions
