@@ -7,6 +7,36 @@ on:
       - master
 
 jobs:
+  packageLambda:
+    name: Install Node.js & npm, serverless framework & package lambda function
+    runs-on: ubuntu-latest
+    env:
+      working-directory: ./source-code
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Node.js & npm
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+          check-latest: true
+      - name: Install Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+          architecture: 'x64'
+      - name: Install Node.js dependencies
+        run: npm install
+        working-directory: ${{env.working-directory}}
+      - name: Package lambda function
+        run: serverless package
+        working-directory: ${{env.working-directory}}
+      - name: Upload packaged lambda function to artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: lambda
+          path: source-code/.serverless/rds-lambda-db-provisioner.zip
+
   # Min Terraform version(s)
   getDirectories:
     name: Get root directories
@@ -34,6 +64,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: lambda
       - name: Install Python
         uses: actions/setup-python@v2
       - name: Terraform min/max versions
@@ -85,6 +118,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: lambda
       - name: Install Python
         uses: actions/setup-python@v2
       - name: Install Terraform v${{ matrix.version }}

@@ -149,7 +149,6 @@ Please refer to the `examples` folder for a complete example.
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13.0 |
-| <a name="requirement_archive"></a> [archive](#requirement\_archive) | >= 2.1.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.0 |
 | <a name="requirement_local"></a> [local](#requirement\_local) | >= 2.1.0 |
 
@@ -157,7 +156,6 @@ Please refer to the `examples` folder for a complete example.
 
 | Name | Version |
 |------|---------|
-| <a name="provider_archive"></a> [archive](#provider\_archive) | >= 2.1.0 |
 | <a name="provider_aws"></a> [aws](#provider\_aws) | >= 3.0 |
 
 ## Modules
@@ -183,7 +181,6 @@ Please refer to the `examples` folder for a complete example.
 | [aws_security_group_rule.egress_blocks](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule) | resource |
 | [aws_security_group_rule.egress_from_lambda_to_db_instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule) | resource |
 | [aws_security_group_rule.ingress_to_db_instance_from_lambda](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule) | resource |
-| [archive_file.default](https://registry.terraform.io/providers/hashicorp/archive/latest/docs/data-sources/file) | data source |
 | [aws_db_instance.default](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/db_instance) | data source |
 | [aws_iam_policy_document.assume](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.default_permissions](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
@@ -224,7 +221,7 @@ Please refer to the `examples` folder for a complete example.
 | <a name="input_enabled"></a> [enabled](#input\_enabled) | Defines whether this module should create resources | `bool` | `true` | no |
 | <a name="input_invoke"></a> [invoke](#input\_invoke) | Defines whether lambda function should be invoked immediately after provisioning | `bool` | `true` | no |
 | <a name="input_kms_key"></a> [kms\_key](#input\_kms\_key) | KMS key identifier. Accepts the same format as KMS key data source (https://www.terraform.io/docs/providers/aws/d/kms_key.html). If this configuration is not provided when environment variables are in use, AWS Lambda uses a default service key. | `string` | `null` | no |
-| <a name="input_logs_kms_key_id"></a> [logs\_kms\_key\_id](#input\_logs\_kms\_key\_id) | KMS Key Id for Lambda function logs ecnryption | `string` | `null` | no |
+| <a name="input_logs_kms_key_id"></a> [logs\_kms\_key\_id](#input\_logs\_kms\_key\_id) | KMS Key Id for Lambda function logs encryption | `string` | `null` | no |
 | <a name="input_logs_retention_days"></a> [logs\_retention\_days](#input\_logs\_retention\_days) | Lambda function logs retentions in days | `number` | `null` | no |
 | <a name="input_memory"></a> [memory](#input\_memory) | Amount of memory in MB your Lambda Function can use at runtime | `number` | `256` | no |
 | <a name="input_name"></a> [name](#input\_name) | Solution name, e.g. 'app' or 'jenkins' | `string` | `"rds"` | no |

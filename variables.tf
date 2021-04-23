@@ -81,7 +81,7 @@ variable "logs_retention_days" {
 
 variable "logs_kms_key_id" {
   type        = string
-  description = "KMS Key Id for Lambda function logs ecnryption"
+  description = "KMS Key Id for Lambda function logs encryption"
   default     = null
 }
 

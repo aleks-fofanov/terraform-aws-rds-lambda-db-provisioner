@@ -3,7 +3,7 @@
 #############################################################
 
 locals {
-  lambda_zip_archive_path = "${path.module}/generated/lambda.zip"
+  lambda_zip_archive_path = "${path.module}/source-code/.serverless/rds-lambda-db-provisioner.zip"
 
   # Master user password
   master_password_in_ssm_param        = var.db_master_password_ssm_param != null ? true : false
@@ -95,18 +95,6 @@ module "default_label" {
 }
 
 #############################################################
-# ZIP Archive
-#############################################################
-
-data "archive_file" "default" {
-  count = var.enabled ? 1 : 0
-
-  type        = "zip"
-  output_path = local.lambda_zip_archive_path
-  source_dir  = "${path.module}/source-code/"
-}
-
-#############################################################
 # Lambda Function
 #############################################################
 
@@ -121,7 +109,7 @@ resource "aws_lambda_function" "default" {
   description   = "Provisions database [${var.db_name}] in RDS Instance [${var.db_instance_id}]"
 
   filename         = local.lambda_zip_archive_path
-  source_code_hash = join("", data.archive_file.default.*.output_base64sha256)
+  source_code_hash = filesha256(local.lambda_zip_archive_path)
 
   role        = join("", aws_iam_role.lambda.*.arn)
   handler     = "main.lambda_handler"
