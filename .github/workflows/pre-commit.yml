@@ -100,7 +100,6 @@ jobs:
         run:
           pre-commit run terraform_validate --color=always --show-diff-on-failure --files $(ls *.tf)
 
-
   # Max Terraform version
   getBaseVersion:
     name: Module max TF version

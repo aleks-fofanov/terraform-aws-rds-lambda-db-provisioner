@@ -35,8 +35,8 @@ override.tf.json
 
 # Serverless directories
 .serverless
-packaged/*
-!packaged/*.zip
+**/packaged/*
+!**/packaged/*.zip
 
 # NodeJS
 node_modules/
