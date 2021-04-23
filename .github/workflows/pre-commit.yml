@@ -70,10 +70,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - name: Download artifcats (packaged lambda)
+        uses: actions/download-artifact@v2
         with:
           name: lambda
-      - run: ls -la
       - run: mkdir -p ${{env.working-directory}}/.serverless/
       - run: cp ./rds-lambda-db-provisioner.zip ${{env.working-directory}}/.serverless/
       - name: Install Python
@@ -129,9 +129,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - name: Download artifcats (packaged lambda)
+        uses: actions/download-artifact@v2
         with:
           name: lambda
+      - run: mkdir -p ${{env.working-directory}}/.serverless/
+      - run: cp ./rds-lambda-db-provisioner.zip ${{env.working-directory}}/.serverless/
       - name: Install Python
         uses: actions/setup-python@v2
       - name: Install Terraform v${{ matrix.version }}
