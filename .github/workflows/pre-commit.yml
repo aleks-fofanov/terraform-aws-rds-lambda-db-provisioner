@@ -8,7 +8,7 @@ on:
 
 jobs:
   packageLambda:
-    name: Install Node.js & npm, serverless framework & package lambda function
+    name: Package lambda function
     runs-on: ubuntu-latest
     env:
       working-directory: ./source-code
@@ -31,13 +31,13 @@ jobs:
         run: npm install
         working-directory: ${{env.working-directory}}
       - name: Package lambda function
-        run: sls package
+        run: sls package ./packaged/
         working-directory: ${{env.working-directory}}
       - name: Upload packaged lambda function to artifacts
         uses: actions/upload-artifact@v2
         with:
           name: lambda
-          path: ${{env.working-directory}}/.serverless/rds-lambda-db-provisioner.zip
+          path: ${{env.working-directory}}/packaged/rds-lambda-db-provisioner.zip
 
   # Min Terraform version(s)
   getDirectories:
@@ -74,8 +74,8 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: lambda
-      - run: mkdir -p ${{env.working-directory}}/.serverless/
-      - run: cp ./rds-lambda-db-provisioner.zip ${{env.working-directory}}/.serverless/
+      - run: mkdir -p ${{env.working-directory}}/packaged/
+      - run: cp ./rds-lambda-db-provisioner.zip ${{env.working-directory}}/packaged/
       - name: Install Python
         uses: actions/setup-python@v2
       - name: Terraform min/max versions
@@ -134,8 +134,8 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: lambda
-      - run: mkdir -p ${{env.working-directory}}/.serverless/
-      - run: cp ./rds-lambda-db-provisioner.zip ${{env.working-directory}}/.serverless/
+      - run: mkdir -p ${{env.working-directory}}/packaged/
+      - run: cp ./rds-lambda-db-provisioner.zip ${{env.working-directory}}/packaged/
       - name: Install Python
         uses: actions/setup-python@v2
       - name: Install Terraform v${{ matrix.version }}
