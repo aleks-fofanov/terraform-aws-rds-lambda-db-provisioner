@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       working-directory: ./source-code
-      packaged-directory: ./source-code/packaged
+      packaged-directory: ./packaged
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -40,7 +40,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: lambda
-          path: ${{env.working-directory}}/packaged/rds-lambda-db-provisioner.zip
+          path: ${{env.packaged-directory}}/rds-lambda-db-provisioner.zip
 
   # Min Terraform version(s)
   getDirectories:
@@ -70,7 +70,7 @@ jobs:
         directory: ${{ fromJson(needs.getDirectories.outputs.directories) }}
     env:
       working-directory: ./source-code
-      packaged-directory: ./source-code/packaged
+      packaged-directory: ./packaged
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -131,7 +131,7 @@ jobs:
           - ${{ needs.getBaseVersion.outputs.maxVersion }}
     env:
       working-directory: ./source-code
-      packaged-directory: ./source-code/packaged
+      packaged-directory: ./packaged
     steps:
       - name: Checkout
         uses: actions/checkout@v2

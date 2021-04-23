@@ -3,7 +3,7 @@
 #############################################################
 
 locals {
-  lambda_zip_archive_path = "${path.module}/source-code/packaged/rds-lambda-db-provisioner.zip"
+  lambda_zip_archive_path = "${path.module}/packaged/rds-lambda-db-provisioner.zip"
 
   # Master user password
   master_password_in_ssm_param        = var.db_master_password_ssm_param != null ? true : false
