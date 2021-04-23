@@ -58,7 +58,9 @@ jobs:
 
   preCommitMinVersions:
     name: Min TF validate
-    needs: getDirectories
+    needs:
+      - getDirectories
+      - packageLambda
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -111,7 +113,9 @@ jobs:
   preCommitMaxVersion:
     name: Max TF pre-commit
     runs-on: ubuntu-latest
-    needs: getBaseVersion
+    needs:
+      - getBaseVersion
+      - packageLambda
     strategy:
       fail-fast: false
       matrix:
