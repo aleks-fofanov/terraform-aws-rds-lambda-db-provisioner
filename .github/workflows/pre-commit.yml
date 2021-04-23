@@ -126,6 +126,8 @@ jobs:
       matrix:
         version:
           - ${{ needs.getBaseVersion.outputs.maxVersion }}
+    env:
+      working-directory: ./source-code
     steps:
       - name: Checkout
         uses: actions/checkout@v2
