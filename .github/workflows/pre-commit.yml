@@ -34,7 +34,7 @@ jobs:
       - name: Create artifact directory
         run: mkdir -p ${{env.packaged-directory}}
       - name: Package lambda function
-        run: sls package ${{env.packaged-directory}}
+        run: sls package --package ${{env.packaged-directory}}
         working-directory: ${{env.working-directory}}
       - name: Upload packaged lambda function to artifacts
         uses: actions/upload-artifact@v2
