@@ -6,41 +6,43 @@ on:
     branches:
       - master
 
+env:
+  node-version: '14'
+  python-version: '3.8'
+  function-source-code-dir: ./source-code
+  packaged-function-dir: ./packaged
+
 jobs:
   packageLambda:
     name: Package lambda function
     runs-on: ubuntu-latest
-    env:
-      working-directory: ./source-code
-      packaged-directory: ./packaged
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Install Node.js & npm
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: ${{env.node-version}}
           check-latest: true
       - name: Install Python 3
         uses: actions/setup-python@v2
         with:
-          python-version: '3.8'
-          architecture: 'x64'
+          python-version: ${{env.python-version}}
       - name: Install Serverless Framework
         run: npm install -g serverless
       - name: Install Node.js dependencies
+        working-directory: ${{env.function-source-code-dir}}
         run: npm install
-        working-directory: ${{env.working-directory}}
       - name: Create artifact directory
-        run: mkdir -p ${{env.packaged-directory}}
+        run: mkdir -p ${{env.packaged-function-dir}}
       - name: Package lambda function
-        run: sls package --package ${{env.packaged-directory}}
-        working-directory: ${{env.working-directory}}
+        working-directory: ${{env.function-source-code-dir}}
+        run: sls package --package ${{env.packaged-function-dir}}
       - name: Upload packaged lambda function to artifacts
         uses: actions/upload-artifact@v2
         with:
           name: lambda
-          path: ${{env.packaged-directory}}/rds-lambda-db-provisioner.zip
+          path: ${{env.packaged-function-dir}}/*.zip
 
   # Min Terraform version(s)
   getDirectories:
@@ -68,9 +70,6 @@ jobs:
     strategy:
       matrix:
         directory: ${{ fromJson(needs.getDirectories.outputs.directories) }}
-    env:
-      working-directory: ./source-code
-      packaged-directory: ./packaged
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -78,8 +77,8 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: lambda
-      - run: mkdir -p ${{env.packaged-directory}}
-      - run: cp ./rds-lambda-db-provisioner.zip ${{env.packaged-directory}}
+      - name: Create artifact directory
+        run: mkdir -p ${{env.packaged-function-dir}} && cp ./*.zip ${{env.packaged-function-dir}}
       - name: Install Python
         uses: actions/setup-python@v2
       - name: Terraform min/max versions
@@ -129,9 +128,6 @@ jobs:
       matrix:
         version:
           - ${{ needs.getBaseVersion.outputs.maxVersion }}
-    env:
-      working-directory: ./source-code
-      packaged-directory: ./packaged
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -139,8 +135,8 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: lambda
-      - run: mkdir -p ${{env.packaged-directory}}
-      - run: cp ./rds-lambda-db-provisioner.zip ${{env.packaged-directory}}
+      - name: Create artifact directory
+        run: mkdir -p ${{env.packaged-function-dir}} && cp ./*.zip ${{env.packaged-function-dir}}
       - name: Install Python
         uses: actions/setup-python@v2
       - name: Install Terraform v${{ matrix.version }}
