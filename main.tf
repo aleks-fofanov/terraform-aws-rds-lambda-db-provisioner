@@ -109,7 +109,7 @@ resource "aws_lambda_function" "default" {
   description   = "Provisions database [${var.db_name}] in RDS Instance [${var.db_instance_id}]"
 
   filename         = local.lambda_zip_archive_path
-  source_code_hash = filesha256(local.lambda_zip_archive_path)
+  source_code_hash = filebase64sha256(local.lambda_zip_archive_path)
 
   role        = join("", aws_iam_role.lambda.*.arn)
   handler     = "main.lambda_handler"
