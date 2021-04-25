@@ -10,7 +10,7 @@ just need to pass db instance identifier.
 Master user will be granted all permissions to the created database.
 If user or database already exists - they won't be created.
 
-Author: aleksandr.fofanov@quantumsoft.ru
+Author: avl.fofanov@gmail.com
 
 """
 
@@ -42,7 +42,7 @@ class DBProvisioner(object):
     def __init__(self):
         self.logger = logging.getLogger('db-provisioner')
         self.logger.setLevel(logging.INFO)
-        self.ssm_client =  boto3.client('ssm')
+        self.ssm_client = boto3.client('ssm')
         self.rds_client = boto3.client('rds')
 
     def describe_instance(self, identifier: str) -> dict:
@@ -56,14 +56,14 @@ class DBProvisioner(object):
             Name=name,
             WithDecryption=True
         )
-        returnval = response.get('Parameter').get('Value')
-        if (name.startswith('/aws/reference/secretsmanager')):
+        return_val = response.get('Parameter').get('Value')
+        if name.startswith('/aws/reference/secretsmanager'):
             try:
-                val = json.loads(returnval)
-                returnval = val['password']
-            except ValueError as e:
+                val = json.loads(return_val)
+                return_val = val['password']
+            except ValueError:
                 pass
-        return returnval
+        return return_val
 
     @staticmethod
     def _get_pg_usernames(cursor) -> List[str]:
@@ -280,7 +280,7 @@ def lambda_handler(event, context):
     except Exception as e:
         logger.exception(e)
 
-    return  {'message': 'All done.'}
+    return {'message': 'All done.'}
 
 
 if __name__ == '__main__':

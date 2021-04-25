@@ -1,0 +1,11 @@
+{
+  "name": "rds-lambda-db-provisioner",
+  "description": "AWS Lambda function which allows to provision a db in RDS instance",
+  "version": "0.1.0",
+  "devDependencies": {
+    "serverless-python-requirements": "^5.1.0"
+  },
+  "dependencies": {
+    "serverless": "^2.37.2"
+  }
+}

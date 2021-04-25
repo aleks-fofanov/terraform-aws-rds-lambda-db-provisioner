@@ -1,0 +1,28 @@
+service: rds-lambda-db-provisioner
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: python3.8
+  lambdaHashingVersion: "20201221"
+
+package:
+  individually: true
+  patterns:
+    - './**'
+    - '!node_modules'
+    - '!.npmignore'
+    - '!package.json'
+    - '!package-lock.json'
+    - '!serverless.yml'
+
+functions:
+  rds-lambda-db-provisioner:
+    handler: main.lambda_handler
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    usePoetry: false
