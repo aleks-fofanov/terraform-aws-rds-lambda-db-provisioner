@@ -143,6 +143,12 @@ variable "db_user_password" {
   default     = null
 }
 
+variable "db_user_role_to_grant" {
+  type        = string
+  description = "Role to be granted to user"
+  default     = null
+}
+
 variable "allowed_egress_cidr_blocks" {
   type        = list(string)
   description = "A list of CIDR blocks allowed to be reached from Lambda. Remember that Lambda needs to be able to communicate with AWS API"
